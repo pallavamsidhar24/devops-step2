@@ -1,0 +1,33 @@
+stages:
+  - build
+  - push
+
+variables:
+  IMAGE_NAME: "pallavamsidhar24/my-web-app"
+
+# Stage 1: Build Docker Image
+build_image:
+  stage: build
+  image: docker:24.0.5
+  services:
+    - docker:24.0.5-dind
+  script:
+    - cd docker-practice
+    - docker build -t $IMAGE_NAME:latest -t $IMAGE_NAME:$CI_PIPELINE_IID .
+    - docker save $IMAGE_NAME > ../image.tar
+  artifacts:
+    paths:
+      - image.tar
+    expire_in: 1 hour
+
+# Stage 2: Push Image to Docker Hub
+push_image:
+  stage: push
+  image: docker:24.0.5
+  services:
+    - docker:24.0.5-dind
+  script:
+    - docker load < image.tar
+    - echo "$DOCKER_HUB_PASSWORD" | docker login -u "$DOCKER_HUB_USER" --password-stdin
+    - docker push $IMAGE_NAME:latest
+    - docker push $IMAGE_NAME:$CI_PIPELINE_IID
