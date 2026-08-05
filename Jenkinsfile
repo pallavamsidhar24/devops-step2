@@ -1,5 +1,12 @@
 pipeline {
-    agent any
+    agent {
+        label 'docker-agent'
+    }
+
+    triggers {
+        // Runs every 2 minutes for the first 15 minutes of every hour
+        cron('H(0-14)/2 * * * *')
+    }
 
     environment {
         IMAGE_NAME = 'pallavamsidhar24/my-web-app'
@@ -37,22 +44,3 @@ pipeline {
         }
     }
 }
-pipeline {
-    agent {
-        label 'docker-agent'
-    }
-
-    triggers {
-        // Runs every 2 minutes for the first 15 minutes of every hour
-        cron('H(0-14)/2 * * * *')
-    }
-
-    stages {
-        stage('Run Scheduled Job') {
-            steps {
-                echo 'Running automated cron build on agent...'
-            }
-        }
-    }
-}
-
